@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.valternegreiros.cozy_todo_task.presentation.state.TaskUiState
 import com.valternegreiros.cozy_todo_task.presentation.viewmodels.CozyTasksViewModel
-import com.valternegreiros.cozy_todo_task.ui.components.BottomTabs
 import com.valternegreiros.cozy_todo_task.ui.components.DashboardHeader
 import com.valternegreiros.cozy_todo_task.ui.components.DashboardSummaryCard
 import com.valternegreiros.cozy_todo_task.ui.components.DecorativeLeaves
@@ -35,14 +34,15 @@ import com.valternegreiros.cozy_todo_task.ui.components.SettingsPanel
 import com.valternegreiros.cozy_todo_task.ui.components.Sidebar
 import com.valternegreiros.cozy_todo_task.ui.components.TaskCard
 import com.valternegreiros.cozy_todo_task.ui.components.TaskEditor
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyBackground
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
 
 @Composable
 internal fun CozyTasksScreen(state: TaskUiState, viewModel: CozyTasksViewModel) {
+    val colors = CozyTheme.colors
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(CozyBackground)
+            .background(colors.background)
     ) {
         DecorativeLeaves()
         val isDesktop = maxWidth >= 840.dp
@@ -56,7 +56,7 @@ internal fun CozyTasksScreen(state: TaskUiState, viewModel: CozyTasksViewModel) 
             visible = state.isEditorOpen,
             modifier = Modifier.align(Alignment.Center)
         ) {
-            TaskEditor(state.draft, state.categories, state.selectedTask, viewModel)
+            TaskEditor(state.draft, state.categories, state.selectedTask, state.strings, viewModel)
         }
 
         FloatingAddButton(
@@ -64,7 +64,7 @@ internal fun CozyTasksScreen(state: TaskUiState, viewModel: CozyTasksViewModel) 
             modifier = if (isDesktop) {
                 Modifier.align(Alignment.BottomEnd).padding(24.dp)
             } else {
-                Modifier.align(Alignment.BottomEnd).padding(end = 18.dp, bottom = 88.dp)
+                Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(end = 18.dp, bottom = 18.dp)
             }
         )
     }
@@ -84,43 +84,40 @@ private fun DesktopShell(state: TaskUiState, viewModel: CozyTasksViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { DashboardHeader(state) }
-            item { DashboardSummaryCard(state.summary) }
+            item { DashboardSummaryCard(state.summary, state.strings) }
             item { FilterBar(state, viewModel) }
-            item { SectionTitle("Hoje") }
+            item { SectionTitle(state.strings.today) }
             if (state.visibleTasks.isEmpty()) {
-                item { EmptyState("Nada por aqui", "Crie uma tarefa tranquila para comecar.") }
+                item { EmptyState(state.strings.desktopEmptyTitle, state.strings.desktopEmptyBody) }
             } else {
                 items(state.visibleTasks, key = { it.id }) { task ->
-                    TaskCard(task, state.categories, viewModel)
+                    TaskCard(task, state.categories, state.strings, viewModel)
                 }
             }
         }
-        SettingsPanel(state.settings, viewModel, Modifier.width(300.dp))
+        SettingsPanel(state.settings, state.strings, viewModel, Modifier.width(300.dp))
     }
 }
 
 @Composable
 private fun MobileShell(state: TaskUiState, viewModel: CozyTasksViewModel) {
-    Column(Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.weight(1f).statusBarsPadding().padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item { Spacer(Modifier.height(8.dp)) }
-            item { DashboardHeader(state) }
-            item { DashboardSummaryCard(state.summary) }
-            item { FilterBar(state, viewModel) }
-            item { SectionTitle("Tarefas") }
-            if (state.visibleTasks.isEmpty()) {
-                item { EmptyState("Tudo calmo", "Sem tarefas nesse filtro.") }
-            } else {
-                items(state.visibleTasks, key = { it.id }) { task ->
-                    TaskCard(task, state.categories, viewModel)
-                }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item { Spacer(Modifier.height(8.dp)) }
+        item { DashboardHeader(state) }
+        item { DashboardSummaryCard(state.summary, state.strings) }
+        item { FilterBar(state, viewModel) }
+        item { SectionTitle(state.strings.tasks) }
+        if (state.visibleTasks.isEmpty()) {
+            item { EmptyState(state.strings.emptyTitle, state.strings.emptyBody) }
+        } else {
+            items(state.visibleTasks, key = { it.id }) { task ->
+                TaskCard(task, state.categories, state.strings, viewModel)
             }
-            item { SettingsPanel(state.settings, viewModel, Modifier.fillMaxWidth()) }
-            item { Spacer(Modifier.height(110.dp)) }
         }
-        BottomTabs(state.selectedFilter, viewModel, Modifier.navigationBarsPadding())
+        item { SettingsPanel(state.settings, state.strings, viewModel, Modifier.fillMaxWidth()) }
+        item { Spacer(Modifier.height(96.dp)) }
     }
 }

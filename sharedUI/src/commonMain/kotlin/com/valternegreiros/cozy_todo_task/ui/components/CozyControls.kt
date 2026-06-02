@@ -32,15 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valternegreiros.cozy_todo_task.core.i18n.CozyStringBundle
 import com.valternegreiros.cozy_todo_task.domain.models.Category
 import com.valternegreiros.cozy_todo_task.domain.models.TaskPriority
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyBackgroundLight
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyCardCream
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGreen
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyOrange
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyRed
-import com.valternegreiros.cozy_todo_task.ui.theme.CozySoftBorder
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyTextBrown
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
 import com.valternegreiros.cozy_todo_task.ui.util.DAY
 import com.valternegreiros.cozy_todo_task.ui.util.HOUR
 import com.valternegreiros.cozy_todo_task.ui.util.hexColor
@@ -48,15 +43,16 @@ import com.valternegreiros.cozy_todo_task.ui.util.hexColor
 @Composable
 internal fun CozyCard(
     modifier: Modifier = Modifier,
-    background: Color = CozyCardCream,
+    background: Color? = null,
     padding: Int = 16,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val colors = CozyTheme.colors
     Column(
         modifier
             .clip(RoundedCornerShape(22.dp))
-            .background(background)
-            .border(1.dp, CozySoftBorder.copy(alpha = 0.72f), RoundedCornerShape(22.dp))
+            .background(background ?: colors.cardCream)
+            .border(1.dp, colors.softBorder.copy(alpha = 0.72f), RoundedCornerShape(22.dp))
             .padding(padding.dp),
         content = content
     )
@@ -70,10 +66,11 @@ internal fun CozyButton(
     secondary: Boolean = false,
     danger: Boolean = false
 ) {
+    val colors = CozyTheme.colors
     val container = when {
-        danger -> CozyRed
-        secondary -> CozyBackgroundLight
-        else -> CozyOrange
+        danger -> colors.red
+        secondary -> colors.backgroundLight
+        else -> colors.orange
     }
     Button(
         onClick = onClick,
@@ -81,7 +78,7 @@ internal fun CozyButton(
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = container,
-            contentColor = if (secondary) CozyTextBrown else Color.White
+            contentColor = if (secondary) colors.textBrown else Color.White
         )
     ) {
         Text(text, fontWeight = FontWeight.Bold)
@@ -90,6 +87,7 @@ internal fun CozyButton(
 
 @Composable
 internal fun CozyTextField(value: String, onChange: (String) -> Unit, label: String) {
+    val colors = CozyTheme.colors
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
@@ -97,43 +95,51 @@ internal fun CozyTextField(value: String, onChange: (String) -> Unit, label: Str
         modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
         shape = RoundedCornerShape(18.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = CozyOrange,
-            unfocusedBorderColor = CozySoftBorder,
-            focusedContainerColor = CozyBackgroundLight,
-            unfocusedContainerColor = CozyBackgroundLight,
-            focusedTextColor = CozyTextBrown,
-            unfocusedTextColor = CozyTextBrown
+            focusedBorderColor = colors.orange,
+            unfocusedBorderColor = colors.softBorder,
+            focusedContainerColor = colors.backgroundLight,
+            unfocusedContainerColor = colors.backgroundLight,
+            focusedTextColor = colors.textBrown,
+            unfocusedTextColor = colors.textBrown
         )
     )
 }
 
 @Composable
 internal fun CozyCheckbox(checked: Boolean, onChange: (Boolean) -> Unit) {
+    val colors = CozyTheme.colors
     Checkbox(
         checked = checked,
         onCheckedChange = onChange,
-        colors = CheckboxDefaults.colors(checkedColor = CozyGreen, uncheckedColor = CozyTextBrown)
+        colors = CheckboxDefaults.colors(checkedColor = colors.green, uncheckedColor = colors.textBrown)
     )
 }
 
 @Composable
-internal fun CozyDatePicker(value: Long?, onChange: (Long?) -> Unit) {
+internal fun CozyDatePicker(value: Long?, strings: CozyStringBundle, onChange: (Long?) -> Unit) {
     val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
     val today = (now / DAY) * DAY
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip("Sem data", value == null) { onChange(null) }
-        FilterChip("Hoje 10:00", value == today + 10 * HOUR) { onChange(today + 10 * HOUR) }
-        FilterChip("Amanha 09:00", value == today + DAY + 9 * HOUR) { onChange(today + DAY + 9 * HOUR) }
-        FilterChip("Semana", value == today + 7 * DAY + 9 * HOUR) { onChange(today + 7 * DAY + 9 * HOUR) }
+        FilterChip(strings.noDate, value == null) { onChange(null) }
+        FilterChip(strings.todayAtTen, value == today + 10 * HOUR) { onChange(today + 10 * HOUR) }
+        FilterChip(strings.tomorrowAtNine, value == today + DAY + 9 * HOUR) { onChange(today + DAY + 9 * HOUR) }
+        FilterChip(strings.week, value == today + 7 * DAY + 9 * HOUR) { onChange(today + 7 * DAY + 9 * HOUR) }
     }
 }
 
 @Composable
-internal fun PriorityChip(priority: TaskPriority, selected: Boolean, compact: Boolean = false, onClick: () -> Unit) {
+internal fun PriorityChip(
+    priority: TaskPriority,
+    selected: Boolean,
+    strings: CozyStringBundle,
+    compact: Boolean = false,
+    onClick: () -> Unit
+) {
+    val colors = CozyTheme.colors
     val (label, color) = when (priority) {
-        TaskPriority.LOW -> "Baixa" to CozyGreen
-        TaskPriority.MEDIUM -> "Media" to CozyOrange
-        TaskPriority.HIGH -> "Alta" to CozyRed
+        TaskPriority.LOW -> strings.priorityLow to colors.green
+        TaskPriority.MEDIUM -> strings.priorityMedium to colors.orange
+        TaskPriority.HIGH -> strings.priorityHigh to colors.red
     }
     FilterChip(label, selected, color, compact, onClick)
 }
@@ -147,18 +153,20 @@ internal fun CategoryChip(category: Category, selected: Boolean, compact: Boolea
 internal fun FilterChip(
     label: String,
     selected: Boolean,
-    accent: Color = CozyOrange,
+    accent: Color? = null,
     compact: Boolean = false,
     onClick: () -> Unit
 ) {
-    val bg = if (selected) accent else CozyBackgroundLight
-    val fg = if (selected) Color.White else CozyTextBrown
+    val colors = CozyTheme.colors
+    val chipAccent = accent ?: colors.orange
+    val bg = if (selected) chipAccent else colors.backgroundLight
+    val fg = if (selected) Color.White else colors.textBrown
     Text(
         label,
         modifier = Modifier
             .clip(RoundedCornerShape(99.dp))
             .background(bg)
-            .border(1.dp, accent.copy(alpha = 0.45f), RoundedCornerShape(99.dp))
+            .border(1.dp, chipAccent.copy(alpha = 0.45f), RoundedCornerShape(99.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = if (compact) 9.dp else 13.dp, vertical = if (compact) 4.dp else 8.dp),
         color = fg,
@@ -169,14 +177,15 @@ internal fun FilterChip(
 
 @Composable
 internal fun NavPill(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val colors = CozyTheme.colors
     Text(
         label,
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) CozyOrange else Color.Transparent)
+            .background(if (selected) colors.orange else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 10.dp),
-        color = if (selected) Color.White else CozyTextBrown,
+        color = if (selected) Color.White else colors.textBrown,
         fontWeight = FontWeight.Bold,
         fontSize = 13.sp,
         maxLines = 1,
@@ -186,11 +195,12 @@ internal fun NavPill(label: String, selected: Boolean, modifier: Modifier = Modi
 
 @Composable
 internal fun FloatingAddButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = CozyTheme.colors
     Box(
         modifier
             .size(58.dp)
             .clip(CircleShape)
-            .background(CozyOrange)
+            .background(colors.orange)
             .border(3.dp, Color.White.copy(alpha = 0.55f), CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center

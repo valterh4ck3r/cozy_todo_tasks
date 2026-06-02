@@ -41,4 +41,5 @@ final class CozyTasksObserver: ObservableObject {
     func toggleDark(_ value: Bool) { viewModel.toggleDarkTheme(value: value) }
     func toggleNotifications(_ value: Bool) { viewModel.toggleNotifications(value: value) }
     func toggleSound(_ value: Bool) { viewModel.toggleCompletionSound(value: value) }
+    func setLanguage(_ value: String) { viewModel.setLanguage(value: value) }
 }

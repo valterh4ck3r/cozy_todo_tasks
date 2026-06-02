@@ -21,12 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valternegreiros.cozy_todo_task.core.i18n.CozyStringBundle
 import com.valternegreiros.cozy_todo_task.presentation.state.DashboardSummary
 import com.valternegreiros.cozy_todo_task.presentation.state.TaskUiState
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGold
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGreen
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyOrange
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyRed
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
 
 @Composable
 internal fun DashboardHeader(state: TaskUiState) {
@@ -61,15 +59,16 @@ internal fun DashboardHeader(state: TaskUiState) {
 }
 
 @Composable
-internal fun DashboardSummaryCard(summary: DashboardSummary) {
+internal fun DashboardSummaryCard(summary: DashboardSummary, strings: CozyStringBundle) {
+    val colors = CozyTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SummaryTile("Pend.", summary.pending, CozyOrange, Modifier.weight(1f))
-        SummaryTile("Concl.", summary.completed, CozyGreen, Modifier.weight(1f))
-        SummaryTile("Atras.", summary.overdue, CozyRed, Modifier.weight(1f))
-        SummaryTile("Hoje", summary.today, CozyGold, Modifier.weight(1f))
+        SummaryTile(strings.pendingShort, summary.pending, colors.orange, Modifier.weight(1f))
+        SummaryTile(strings.completedShort, summary.completed, colors.green, Modifier.weight(1f))
+        SummaryTile(strings.overdueShort, summary.overdue, colors.red, Modifier.weight(1f))
+        SummaryTile(strings.today, summary.today, colors.gold, Modifier.weight(1f))
     }
 }
 

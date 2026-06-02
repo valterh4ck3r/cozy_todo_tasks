@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.valternegreiros.cozy_todo_task.presentation.viewmodels.CozyTasksViewModel
 import com.valternegreiros.cozy_todo_task.ui.screens.CozyTasksScreen
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyBackground
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyTextBrown
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyThemeProvider
 
 @Composable
 @Preview
@@ -25,14 +25,17 @@ fun App(viewModel: CozyTasksViewModel = remember { CozyTasksViewModel() }) {
     }
 
     MaterialTheme {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(CozyBackground),
-            color = CozyBackground,
-            contentColor = CozyTextBrown
-        ) {
-            CozyTasksScreen(state, viewModel)
+        CozyThemeProvider(darkTheme = state.settings.darkTheme) {
+            val colors = CozyTheme.colors
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colors.background),
+                color = colors.background,
+                contentColor = colors.textBrown
+            ) {
+                CozyTasksScreen(state, viewModel)
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ struct TaskListView: View {
         let tasks = state.visibleTasks as? [SharedLogic.Task] ?? []
         VStack(spacing: 10) {
             if tasks.isEmpty {
-                EmptyTasksView()
+                EmptyTasksView(state: state)
             } else {
                 ForEach(tasks, id: \.id) { task in
                     TaskRowView(task: task, state: state, observer: observer)
@@ -20,11 +20,13 @@ struct TaskListView: View {
 }
 
 private struct EmptyTasksView: View {
+    let state: TaskUiState
+
     var body: some View {
         CozyCard {
             PlantView().frame(width: 70, height: 70)
-            Text("Tudo calmo").font(.title3.weight(.black))
-            Text("Sem tarefas nesse filtro.").foregroundStyle(CozyColor.text.opacity(0.7))
+            Text(state.strings.emptyTitle).font(.title3.weight(.black))
+            Text(state.strings.emptyBody).foregroundStyle(CozyColor.text.opacity(0.7))
         }
     }
 }
@@ -52,8 +54,8 @@ private struct TaskRowView: View {
                         .minimumScaleFactor(0.9)
                         .strikethrough(task.isCompleted)
                     HStack {
-                        Text(formatDue(task.dueDate)).font(.caption)
-                        Text(priorityLabel(task.priority))
+                        Text(formatDue(task.dueDate, noDate: state.strings.noDate)).font(.caption)
+                        Text(priorityLabel(task.priority, state.strings))
                             .font(.caption.weight(.bold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)

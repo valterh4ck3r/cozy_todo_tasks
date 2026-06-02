@@ -1,6 +1,8 @@
 package com.valternegreiros.cozy_todo_task.presentation.viewmodels
 
 import com.valternegreiros.cozy_todo_task.core.dispatchers.AppDispatchers
+import com.valternegreiros.cozy_todo_task.core.i18n.CozyStringBundle
+import com.valternegreiros.cozy_todo_task.core.i18n.CozyStrings
 import com.valternegreiros.cozy_todo_task.core.time.Clock
 import com.valternegreiros.cozy_todo_task.core.time.SystemClock
 import com.valternegreiros.cozy_todo_task.data.repository.PersistedTaskRepository
@@ -128,7 +130,7 @@ class CozyTasksViewModel(
         val draft = _uiState.value.draft
         val title = draft.title.trim()
         if (title.isBlank()) {
-            _uiState.value = _uiState.value.copy(message = "Dê um nome para a tarefa.")
+            _uiState.value = _uiState.value.copy(message = _uiState.value.strings.taskTitleRequired)
             return
         }
 
@@ -189,6 +191,11 @@ class CozyTasksViewModel(
     fun toggleDarkTheme(value: Boolean) = updateSettings { copy(darkTheme = value) }
     fun toggleNotifications(value: Boolean) = updateSettings { copy(notificationsEnabled = value) }
     fun toggleCompletionSound(value: Boolean) = updateSettings { copy(completionSoundEnabled = value) }
+    fun setLanguage(value: String) {
+        val current = _uiState.value
+        val next = current.copy(settings = current.settings.copy(language = value))
+        _uiState.value = buildState(current.tasks, current.categories, next)
+    }
 
     fun closeEditor() {
         _uiState.value = _uiState.value.copy(isEditorOpen = false, selectedTask = null, draft = TaskDraft())
@@ -230,6 +237,7 @@ class CozyTasksViewModel(
         val today = startOfDay(now)
         val tomorrow = today + DAY
         val todayTasks = tasks.filter { it.dueDate != null && it.dueDate in today until tomorrow }
+        val strings = CozyStrings.bundle(current.settings.language)
         val summary = DashboardSummary(
             pending = tasks.count { !it.isCompleted },
             completed = tasks.count { it.isCompleted },
@@ -237,7 +245,9 @@ class CozyTasksViewModel(
             today = todayTasks.size
         )
         return current.copy(
-            greeting = greetingFor(now),
+            greeting = greetingFor(now, strings),
+            headline = strings.headline,
+            strings = strings,
             tasks = tasks,
             visibleTasks = filterTasks(tasks, current.selectedFilter, now, current.selectedPriority, current.selectedCategoryId),
             todayTasks = todayTasks,
@@ -246,12 +256,12 @@ class CozyTasksViewModel(
         )
     }
 
-    private fun greetingFor(now: Long): String {
+    private fun greetingFor(now: Long, strings: CozyStringBundle): String {
         val hour = ((now % DAY) / HOUR).toInt()
         return when (hour) {
-            in 5..11 -> "Bom dia"
-            in 12..17 -> "Boa tarde"
-            else -> "Boa noite"
+            in 5..11 -> strings.morningGreeting
+            in 12..17 -> strings.afternoonGreeting
+            else -> strings.eveningGreeting
         }
     }
 

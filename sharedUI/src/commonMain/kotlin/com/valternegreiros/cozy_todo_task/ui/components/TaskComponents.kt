@@ -32,21 +32,24 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valternegreiros.cozy_todo_task.core.i18n.CozyStringBundle
 import com.valternegreiros.cozy_todo_task.domain.models.Category
 import com.valternegreiros.cozy_todo_task.domain.models.Task
 import com.valternegreiros.cozy_todo_task.domain.models.TaskPriority
 import com.valternegreiros.cozy_todo_task.presentation.state.TaskDraft
 import com.valternegreiros.cozy_todo_task.presentation.viewmodels.CozyTasksViewModel
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyBackgroundLight
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyCardCream
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyCompleted
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGreenDark
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyTextBrown
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
 import com.valternegreiros.cozy_todo_task.ui.util.formatDueDate
 
 @Composable
-internal fun TaskCard(task: Task, categories: List<Category>, viewModel: CozyTasksViewModel) {
-    val completedColor by animateColorAsState(if (task.isCompleted) CozyCompleted else CozyCardCream)
+internal fun TaskCard(
+    task: Task,
+    categories: List<Category>,
+    strings: CozyStringBundle,
+    viewModel: CozyTasksViewModel
+) {
+    val colors = CozyTheme.colors
+    val completedColor by animateColorAsState(if (task.isCompleted) colors.completed else colors.cardCream)
     val scale by animateFloatAsState(if (task.isCompleted) 0.985f else 1f)
     val category = categories.firstOrNull { it.id == task.categoryId }
 
@@ -69,7 +72,7 @@ internal fun TaskCard(task: Task, categories: List<Category>, viewModel: CozyTas
                     task.title,
                     fontWeight = FontWeight.Bold,
                     textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (task.isCompleted) CozyGreenDark else CozyTextBrown,
+                    color = if (task.isCompleted) colors.greenDark else colors.textBrown,
                     fontSize = 17.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -80,8 +83,8 @@ internal fun TaskCard(task: Task, categories: List<Category>, viewModel: CozyTas
                     verticalArrangement = Arrangement.spacedBy(5.dp),
                     itemVerticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(formatDueDate(task.dueDate), fontSize = 12.sp)
-                    PriorityChip(task.priority, selected = false, compact = true) {}
+                    Text(formatDueDate(task.dueDate, strings.noDate), fontSize = 12.sp)
+                    PriorityChip(task.priority, selected = false, strings = strings, compact = true) {}
                     if (category != null) {
                         CategoryChip(category, selected = false, compact = true) {}
                     }
@@ -96,6 +99,7 @@ internal fun TaskEditor(
     draft: TaskDraft,
     categories: List<Category>,
     selectedTask: Task?,
+    strings: CozyStringBundle,
     viewModel: CozyTasksViewModel
 ) {
     Box(
@@ -117,22 +121,22 @@ internal fun TaskEditor(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            if (selectedTask == null) "Nova tarefa" else "Detalhes",
+                            if (selectedTask == null) strings.newTask else strings.details,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black
                         )
-                        CozyButton("Fechar", onClick = viewModel::closeEditor, secondary = true)
+                        CozyButton(strings.close, onClick = viewModel::closeEditor, secondary = true)
                     }
                     Spacer(Modifier.height(12.dp))
-                    CozyTextField(draft.title, viewModel::updateDraftTitle, "Titulo")
-                    CozyTextField(draft.description, viewModel::updateDraftDescription, "Descricao")
+                    CozyTextField(draft.title, viewModel::updateDraftTitle, strings.title)
+                    CozyTextField(draft.description, viewModel::updateDraftDescription, strings.description)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PriorityChip(TaskPriority.LOW, draft.priority == TaskPriority.LOW) { viewModel.updateDraftPriority(TaskPriority.LOW) }
-                        PriorityChip(TaskPriority.MEDIUM, draft.priority == TaskPriority.MEDIUM) { viewModel.updateDraftPriority(TaskPriority.MEDIUM) }
-                        PriorityChip(TaskPriority.HIGH, draft.priority == TaskPriority.HIGH) { viewModel.updateDraftPriority(TaskPriority.HIGH) }
+                        PriorityChip(TaskPriority.LOW, draft.priority == TaskPriority.LOW, strings = strings) { viewModel.updateDraftPriority(TaskPriority.LOW) }
+                        PriorityChip(TaskPriority.MEDIUM, draft.priority == TaskPriority.MEDIUM, strings = strings) { viewModel.updateDraftPriority(TaskPriority.MEDIUM) }
+                        PriorityChip(TaskPriority.HIGH, draft.priority == TaskPriority.HIGH, strings = strings) { viewModel.updateDraftPriority(TaskPriority.HIGH) }
                     }
                     Spacer(Modifier.height(8.dp))
-                    CozyDatePicker(draft.dueDate, viewModel::updateDraftDueDate)
+                    CozyDatePicker(draft.dueDate, strings, viewModel::updateDraftDueDate)
                     Spacer(Modifier.height(8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         categories.forEach { category ->
@@ -141,18 +145,18 @@ internal fun TaskEditor(
                             }
                         }
                     }
-                    CozyTextField(draft.notes, viewModel::updateDraftNotes, "Observacoes")
-                    CozyTextField(draft.checklistText, viewModel::updateDraftChecklist, "Checklist opcional (um item por linha)")
+                    CozyTextField(draft.notes, viewModel::updateDraftNotes, strings.notes)
+                    CozyTextField(draft.checklistText, viewModel::updateDraftChecklist, strings.checklistHint)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (selectedTask != null) {
                             CozyButton(
-                                "Excluir",
+                                strings.delete,
                                 onClick = { viewModel.removeTask(selectedTask.id) },
                                 danger = true,
                                 modifier = Modifier.weight(1f)
                             )
                         }
-                        CozyButton("Salvar", onClick = viewModel::saveDraft, modifier = Modifier.weight(1f))
+                        CozyButton(strings.save, onClick = viewModel::saveDraft, modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -162,7 +166,8 @@ internal fun TaskEditor(
 
 @Composable
 internal fun EmptyState(title: String, body: String) {
-    CozyCard(Modifier.fillMaxWidth(), background = CozyBackgroundLight) {
+    val colors = CozyTheme.colors
+    CozyCard(Modifier.fillMaxWidth(), background = colors.backgroundLight) {
         PlantPot(Modifier.size(72.dp).align(Alignment.CenterHorizontally))
         Text(title, fontSize = 20.sp, fontWeight = FontWeight.Black, modifier = Modifier.align(Alignment.CenterHorizontally))
         Text(body, modifier = Modifier.align(Alignment.CenterHorizontally).alpha(0.76f))

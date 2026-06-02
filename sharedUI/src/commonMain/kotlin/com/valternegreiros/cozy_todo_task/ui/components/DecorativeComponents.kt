@@ -11,12 +11,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGreen
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyGreenDark
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyOrangeDark
+import com.valternegreiros.cozy_todo_task.ui.theme.CozyTheme
 
 @Composable
 internal fun DecorativeLeaves() {
+    val colors = CozyTheme.colors
     Canvas(Modifier.fillMaxSize().alpha(0.16f)) {
         val leaf = Path().apply {
             moveTo(0f, -18f)
@@ -31,7 +30,7 @@ internal fun DecorativeLeaves() {
         ).forEachIndexed { index, offset ->
             rotate(index * 34f, offset) {
                 translate(offset.x, offset.y) {
-                    drawPath(leaf, CozyGreen)
+                    drawPath(leaf, colors.green)
                 }
             }
         }
@@ -40,12 +39,13 @@ internal fun DecorativeLeaves() {
 
 @Composable
 internal fun PlantPot(modifier: Modifier = Modifier) {
+    val colors = CozyTheme.colors
     Canvas(modifier) {
-        drawCircle(CozyGreen, radius = size.minDimension * 0.13f, center = Offset(size.width * 0.35f, size.height * 0.32f))
-        drawCircle(CozyGreenDark, radius = size.minDimension * 0.15f, center = Offset(size.width * 0.56f, size.height * 0.24f))
-        drawCircle(CozyGreen, radius = size.minDimension * 0.12f, center = Offset(size.width * 0.66f, size.height * 0.42f))
+        drawCircle(colors.green, radius = size.minDimension * 0.13f, center = Offset(size.width * 0.35f, size.height * 0.32f))
+        drawCircle(colors.greenDark, radius = size.minDimension * 0.15f, center = Offset(size.width * 0.56f, size.height * 0.24f))
+        drawCircle(colors.green, radius = size.minDimension * 0.12f, center = Offset(size.width * 0.66f, size.height * 0.42f))
         drawRoundRect(
-            color = CozyOrangeDark,
+            color = colors.orangeDark,
             topLeft = Offset(size.width * 0.26f, size.height * 0.58f),
             size = Size(size.width * 0.48f, size.height * 0.28f),
             cornerRadius = CornerRadius(18f, 18f)

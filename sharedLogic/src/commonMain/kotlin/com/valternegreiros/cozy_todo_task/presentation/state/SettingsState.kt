@@ -4,6 +4,6 @@ data class SettingsState(
     val darkTheme: Boolean = false,
     val notificationsEnabled: Boolean = true,
     val completionSoundEnabled: Boolean = true,
-    val futureLanguage: String = "pt-BR",
+    val language: String = "pt_BR",
     val futureBackupEnabled: Boolean = false
 )

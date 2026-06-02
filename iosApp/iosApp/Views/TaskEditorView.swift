@@ -12,19 +12,19 @@ struct TaskEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text(state.selectedTask == nil ? "Nova tarefa" : "Detalhes")
+                    Text(state.selectedTask == nil ? state.strings.newTask : state.strings.details)
                         .font(.title2.weight(.black))
                     Spacer()
-                    Button("Fechar", action: observer.closeEditor)
+                    Button(state.strings.close, action: observer.closeEditor)
                 }
 
-                CozyTextField(label: "Titulo", value: draft.title, onChange: observer.updateTitle)
-                CozyTextField(label: "Descricao", value: draft.description, onChange: observer.updateDescription)
+                CozyTextField(label: state.strings.title, value: draft.title, onChange: observer.updateTitle)
+                CozyTextField(label: state.strings.description, value: draft.description, onChange: observer.updateDescription)
 
                 HStack {
-                    CozyChip(label: "Baixa", selected: draft.priority == .low) { observer.updatePriority(.low) }
-                    CozyChip(label: "Media", selected: draft.priority == .medium) { observer.updatePriority(.medium) }
-                    CozyChip(label: "Alta", selected: draft.priority == .high) { observer.updatePriority(.high) }
+                    CozyChip(label: state.strings.priorityLow, selected: draft.priority == .low) { observer.updatePriority(.low) }
+                    CozyChip(label: state.strings.priorityMedium, selected: draft.priority == .medium) { observer.updatePriority(.medium) }
+                    CozyChip(label: state.strings.priorityHigh, selected: draft.priority == .high) { observer.updatePriority(.high) }
                 }
 
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -37,16 +37,16 @@ struct TaskEditorView: View {
                     }
                 }
 
-                CozyTextField(label: "Observacoes", value: draft.notes, onChange: observer.updateNotes)
-                CozyTextField(label: "Checklist opcional", value: draft.checklistText, onChange: observer.updateChecklist)
+                CozyTextField(label: state.strings.notes, value: draft.notes, onChange: observer.updateNotes)
+                CozyTextField(label: state.strings.checklistHint, value: draft.checklistText, onChange: observer.updateChecklist)
 
                 HStack {
                     if let task = state.selectedTask {
-                        Button("Excluir") { observer.deleteTask(task.id) }
+                        Button(state.strings.delete) { observer.deleteTask(task.id) }
                             .buttonStyle(.borderedProminent)
                             .tint(CozyColor.red)
                     }
-                    Button("Salvar", action: observer.saveDraft)
+                    Button(state.strings.save, action: observer.saveDraft)
                         .buttonStyle(.borderedProminent)
                         .tint(CozyColor.orange)
                 }

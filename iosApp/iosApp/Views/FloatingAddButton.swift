@@ -15,6 +15,6 @@ struct FloatingAddButton: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .padding(.trailing, 18)
-        .padding(.bottom, 86)
+        .padding(.bottom, 18)
     }
 }

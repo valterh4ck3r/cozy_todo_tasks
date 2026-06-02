@@ -30,10 +30,10 @@ struct DashboardSummaryView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            SummaryTile(label: "Pend.", value: state.summary.pending, color: CozyColor.orange)
-            SummaryTile(label: "Concl.", value: state.summary.completed, color: CozyColor.green)
-            SummaryTile(label: "Atras.", value: state.summary.overdue, color: CozyColor.red)
-            SummaryTile(label: "Hoje", value: state.summary.today, color: CozyColor.gold)
+            SummaryTile(label: state.strings.pendingShort, value: state.summary.pending, color: CozyColor.orange)
+            SummaryTile(label: state.strings.completedShort, value: state.summary.completed, color: CozyColor.green)
+            SummaryTile(label: state.strings.overdueShort, value: state.summary.overdue, color: CozyColor.red)
+            SummaryTile(label: state.strings.today, value: state.summary.today, color: CozyColor.gold)
         }
     }
 }
@@ -45,11 +45,11 @@ struct TaskFilterBarView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                CozyChip(label: "Todas", selected: state.selectedFilter == .all) { observer.setFilter(.all) }
-                CozyChip(label: "Hoje", selected: state.selectedFilter == .today) { observer.setFilter(.today) }
-                CozyChip(label: "Proximas", selected: state.selectedFilter == .upcoming) { observer.setFilter(.upcoming) }
-                CozyChip(label: "Concluidas", selected: state.selectedFilter == .completed) { observer.setFilter(.completed) }
-                CozyChip(label: "Atrasadas", selected: state.selectedFilter == .overdue) { observer.setFilter(.overdue) }
+                CozyChip(label: state.strings.all, selected: state.selectedFilter == .all) { observer.setFilter(.all) }
+                CozyChip(label: state.strings.today, selected: state.selectedFilter == .today) { observer.setFilter(.today) }
+                CozyChip(label: state.strings.upcoming, selected: state.selectedFilter == .upcoming) { observer.setFilter(.upcoming) }
+                CozyChip(label: state.strings.completed, selected: state.selectedFilter == .completed) { observer.setFilter(.completed) }
+                CozyChip(label: state.strings.overdue, selected: state.selectedFilter == .overdue) { observer.setFilter(.overdue) }
             }
             .padding(.vertical, 1)
         }

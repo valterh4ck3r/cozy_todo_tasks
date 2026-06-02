@@ -11,17 +11,17 @@ struct ContentView: View {
                     DashboardHeaderView(state: observer.state)
                     DashboardSummaryView(state: observer.state)
                     TaskFilterBarView(state: observer.state, observer: observer)
-                    SectionTitleView(title: "Tarefas")
+                    SectionTitleView(title: observer.state.strings.tasks)
                     TaskListView(state: observer.state, observer: observer)
                     SettingsPanelView(state: observer.state, observer: observer)
-                    Color.clear.frame(height: 112)
+                    Color.clear.frame(height: 96)
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 10)
             }
-            BottomTabsView(selectedFilter: observer.state.selectedFilter, observer: observer)
             FloatingAddButton(action: observer.openNewTask)
         }
+        .preferredColorScheme(observer.state.settings.darkTheme ? .dark : .light)
         .sheet(isPresented: Binding(get: { observer.state.isEditorOpen }, set: { if !$0 { observer.closeEditor() } })) {
             TaskEditorView(state: observer.state, observer: observer)
                 .presentationDetents([.medium, .large])

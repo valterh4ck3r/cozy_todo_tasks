@@ -1,19 +1,19 @@
 package com.valternegreiros.cozy_todo_task.ui.util
 
 import androidx.compose.ui.graphics.Color
-import com.valternegreiros.cozy_todo_task.ui.theme.CozyOrange
+import com.valternegreiros.cozy_todo_task.ui.theme.LightCozyColors
 
 internal const val HOUR = 60 * 60 * 1000L
 internal const val DAY = 24 * HOUR
 
-internal fun formatDueDate(value: Long?): String {
-    if (value == null) return "Sem data"
+internal fun formatDueDate(value: Long?, noDate: String): String {
+    if (value == null) return noDate
     val hour = ((value % DAY) / HOUR).toInt()
     val minute = ((value % HOUR) / 60_000L).toInt()
     return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
 }
 
 internal fun hexColor(hex: String): Color {
-    val value = hex.removePrefix("#").toLongOrNull(16) ?: return CozyOrange
+    val value = hex.removePrefix("#").toLongOrNull(16) ?: return LightCozyColors.orange
     return Color(0xFF00000000 or value)
 }

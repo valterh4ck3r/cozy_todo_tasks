@@ -4,6 +4,7 @@ import com.valternegreiros.cozy_todo_task.core.time.Clock
 import com.valternegreiros.cozy_todo_task.core.time.SystemClock
 import com.valternegreiros.cozy_todo_task.data.local.TaskLocalStorage
 import com.valternegreiros.cozy_todo_task.data.local.TaskStoreSnapshot
+import com.valternegreiros.cozy_todo_task.domain.models.AppSettings
 import com.valternegreiros.cozy_todo_task.domain.models.Category
 import com.valternegreiros.cozy_todo_task.domain.models.Task
 import com.valternegreiros.cozy_todo_task.domain.models.TaskPriority
@@ -32,9 +33,11 @@ class PersistedTaskRepository(
     private val mutex = Mutex()
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     private val _categories = MutableStateFlow(defaultCategories())
+    private val _settings = MutableStateFlow(AppSettings())
 
     override val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
     override val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+    override val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
     init {
         scope.launch {
@@ -72,6 +75,10 @@ class PersistedTaskRepository(
         }
     }
 
+    override suspend fun updateSettings(settings: AppSettings) = persist {
+        _settings.value = settings
+    }
+
     private suspend fun load() {
         mutex.withLock {
             val content = storage.readText()
@@ -85,6 +92,7 @@ class PersistedTaskRepository(
                 .onSuccess { snapshot ->
                     _tasks.value = snapshot.tasks.sortedForCozy()
                     _categories.value = if (snapshot.categories.isEmpty()) defaultCategories() else snapshot.categories
+                    _settings.value = snapshot.settings
                 }
                 .onFailure {
                     seed()
@@ -101,7 +109,7 @@ class PersistedTaskRepository(
     }
 
     private suspend fun writeSnapshot() {
-        storage.writeText(json.encodeToString(TaskStoreSnapshot(_tasks.value, _categories.value)))
+        storage.writeText(json.encodeToString(TaskStoreSnapshot(_tasks.value, _categories.value, _settings.value)))
     }
 
     private fun seed() {

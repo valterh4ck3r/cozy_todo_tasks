@@ -7,6 +7,7 @@ import com.valternegreiros.cozy_todo_task.core.time.Clock
 import com.valternegreiros.cozy_todo_task.core.time.SystemClock
 import com.valternegreiros.cozy_todo_task.data.repository.PersistedTaskRepository
 import com.valternegreiros.cozy_todo_task.data.repository.startOfDay
+import com.valternegreiros.cozy_todo_task.domain.models.AppSettings
 import com.valternegreiros.cozy_todo_task.domain.models.ChecklistItem
 import com.valternegreiros.cozy_todo_task.domain.models.Task
 import com.valternegreiros.cozy_todo_task.domain.models.TaskFilter
@@ -49,8 +50,8 @@ class CozyTasksViewModel(
 
     init {
         scope.launch {
-            combine(repository.tasks, repository.categories) { tasks, categories ->
-                buildState(tasks, categories, _uiState.value)
+            combine(repository.tasks, repository.categories, repository.settings) { tasks, categories, settings ->
+                buildState(tasks, categories, _uiState.value.copy(settings = settings.toPresentation()))
             }.collectLatest { nextState ->
                 _uiState.value = nextState
             }
@@ -191,11 +192,7 @@ class CozyTasksViewModel(
     fun toggleDarkTheme(value: Boolean) = updateSettings { copy(darkTheme = value) }
     fun toggleNotifications(value: Boolean) = updateSettings { copy(notificationsEnabled = value) }
     fun toggleCompletionSound(value: Boolean) = updateSettings { copy(completionSoundEnabled = value) }
-    fun setLanguage(value: String) {
-        val current = _uiState.value
-        val next = current.copy(settings = current.settings.copy(language = value))
-        _uiState.value = buildState(current.tasks, current.categories, next)
-    }
+    fun setLanguage(value: String) = updateSettings { copy(language = value) }
 
     fun closeEditor() {
         _uiState.value = _uiState.value.copy(isEditorOpen = false, selectedTask = null, draft = TaskDraft())
@@ -225,8 +222,29 @@ class CozyTasksViewModel(
     }
 
     private fun updateSettings(change: SettingsState.() -> SettingsState) {
-        _uiState.value = _uiState.value.copy(settings = _uiState.value.settings.change())
+        val current = _uiState.value
+        val settings = current.settings.change()
+        _uiState.value = buildState(current.tasks, current.categories, current.copy(settings = settings))
+        scope.launch {
+            repository.updateSettings(settings.toDomain())
+        }
     }
+
+    private fun AppSettings.toPresentation(): SettingsState = SettingsState(
+        darkTheme = darkTheme,
+        notificationsEnabled = notificationsEnabled,
+        completionSoundEnabled = completionSoundEnabled,
+        language = language,
+        futureBackupEnabled = futureBackupEnabled
+    )
+
+    private fun SettingsState.toDomain(): AppSettings = AppSettings(
+        darkTheme = darkTheme,
+        notificationsEnabled = notificationsEnabled,
+        completionSoundEnabled = completionSoundEnabled,
+        language = language,
+        futureBackupEnabled = futureBackupEnabled
+    )
 
     private fun buildState(
         tasks: List<Task>,

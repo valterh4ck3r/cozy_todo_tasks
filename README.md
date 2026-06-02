@@ -138,7 +138,24 @@ The app uses a JSON snapshot encoded with Kotlinx Serialization behind a shared 
 - Desktop: writes `~/.cozy-tasks/cozy_tasks_store.json`.
 - iOS: stores the JSON string in `NSUserDefaults`.
 
-This keeps the app lightweight, easy to inspect, and fully multiplatform without adding database setup. SQLDelight or a multiplatform DataStore layer can replace `TaskLocalStorage` later without changing ViewModels or use cases.
+The snapshot persists tasks, categories, and app settings such as dark theme and the selected language. This keeps the app lightweight, easy to inspect, and fully multiplatform without adding database setup. SQLDelight or a multiplatform DataStore layer can replace `TaskLocalStorage` later without changing ViewModels or use cases.
+
+## Internationalization
+
+Runtime language switching is implemented in `sharedLogic/core/i18n` with a typed `CozyStringBundle` catalog for `en_US`, `pt_BR`, and `es_ES`.
+
+The shared `CozyTasksViewModel` reads the selected language from persisted `AppSettings`, resolves the correct bundle through `CozyStrings`, and exposes it in `TaskUiState.strings`. Compose and SwiftUI both render labels from that shared state:
+
+```text
+Settings language chip
+  -> CozyTasksViewModel.setLanguage("en_US")
+  -> TaskRepository.updateSettings(...)
+  -> persisted JSON snapshot
+  -> TaskUiState.strings
+  -> Compose and SwiftUI redraw
+```
+
+This project intentionally keeps the source of localized UI text in `sharedLogic`, because iOS is native SwiftUI and must consume the same ViewModel state as Android/Desktop. Compose Multiplatform resources remain available in `sharedUI` for UI-only assets, but app copy that must be shared with SwiftUI lives in the shared presentation state.
 
 ## Features
 
@@ -150,7 +167,7 @@ This keeps the app lightweight, easy to inspect, and fully multiplatform without
 - Settings toggles for theme, notifications, and completion sound.
 - Shared ViewModel used by Compose and SwiftUI.
 - SwiftUI renders shared state and dispatches actions to the shared ViewModel.
-- i18n structure prepared for English, Brazilian Portuguese, and Spanish.
+- Runtime i18n for English, Brazilian Portuguese, and Spanish.
 - Reminder scheduling architecture prepared with `expect/actual`.
 
 ## Running
